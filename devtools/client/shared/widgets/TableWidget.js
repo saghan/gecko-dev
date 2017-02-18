@@ -1635,7 +1635,8 @@ function EditableFieldsEngine(options) {
   this.root = options.root;
   this.selectors = options.selectors;
   this.onTab = options.onTab;
-  this.onTriggerEvent = options.onTriggerEvent || "dblclick";
+  // this.onTriggerEvent = options.onTriggerEvent || "dblclick";
+  this.onTriggerEvent =  "click";
 
   this.edit = this.edit.bind(this);
   this.cancelEdit = this.cancelEdit.bind(this);
