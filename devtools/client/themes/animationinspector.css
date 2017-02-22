@@ -30,7 +30,8 @@
 
 :root {
   /* How high should toolbars be */
-  --toolbar-height: 20px;
+  /*--toolbar-height: 20px;*/
+  --toolbar-height: 23px;
   /* How wide should the sidebar be (should be wide enough to contain long
      property names like 'border-bottom-right-radius' without ellipsis) */
   --timeline-sidebar-width: 200px;
