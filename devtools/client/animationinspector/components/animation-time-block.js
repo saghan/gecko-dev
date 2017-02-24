@@ -500,6 +500,7 @@ function renderInfinity(parentEl, state, mainIterationStartTime,
 
   // Append other iterations. We can copy first segments.
   const isAlternate = state.direction.match(/alternate/);
+  //console.log('isAlternate: ', isAlternate);
   for (let i = 1; i < infinityIterationCount; i++) {
     const startTime = firstStartTime + i * state.duration;
     let segments;

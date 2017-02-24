@@ -356,6 +356,7 @@ var AnimationPlayerActor = protocol.ActorClassWithSpec(animationPlayerSpec, {
    * the the front.
    */
   onAnimationMutation: function (mutations) {
+    //console.log('ActorClassWithSpec: onAnimationMutation function');
     let isCurrentAnimation = animation => animation === this.player;
     let hasCurrentAnimation = animations => animations.some(isCurrentAnimation);
     let hasChanged = false;
@@ -372,17 +373,21 @@ var AnimationPlayerActor = protocol.ActorClassWithSpec(animationPlayerSpec, {
         // Only consider the state has having changed if any of delay, duration,
         // iterationcount or iterationStart has changed (for now at least).
         let newState = this.getState();
+        //console.log(newState);
         let oldState = this.currentState;
         hasChanged = newState.delay !== oldState.delay ||
                      newState.iterationCount !== oldState.iterationCount ||
                      newState.iterationStart !== oldState.iterationStart ||
                      newState.duration !== oldState.duration ||
-                     newState.endDelay !== oldState.endDelay;
+                     newState.endDelay !== oldState.endDelay; ||
+                     newState.direction !== oldState.direction;
+        //console.log(hasChanged);
         break;
       }
     }
 
     if (hasChanged) {
+      console.log('hasChanged\n');
       events.emit(this, "changed", this.getCurrentState());
     }
   },
