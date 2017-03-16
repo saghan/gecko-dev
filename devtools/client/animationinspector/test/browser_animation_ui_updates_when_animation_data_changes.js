@@ -12,7 +12,7 @@ requestLongerTimeout(2);
 add_task(function* () {
   yield addTab(URL_ROOT + "doc_simple_animation.html");
   let {panel, controller, inspector} = yield openAnimationInspector();
-
+  
   info("Select the test node");
   yield selectNodeAndWaitForAnimations(".animated", inspector);
 
@@ -33,6 +33,23 @@ add_task(function* () {
   let delayWidth = parseFloat(timeBlockEl.querySelector(".delay").style.width);
   is(Math.round(delayWidth * expectedTotalDuration / 100), 45 * 1000,
     "The timeline has the right delay");
+
+  // Test case for Bug 1330544, where we check the direction, fill and ease
+  // for alternate direction
+  yield setStyle(animation, panel, "animationDirection", "reverse");
+  let timelineEl = panel.animationsTimelineComponent.rootWrapperEl;
+  let timeBlockNameEls = timelineEl.querySelectorAll(".time-block .name");
+
+  [...timeBlockNameEls].forEach((el, i) => {
+
+    let title = el.getAttribute("title");
+    
+    ok(title.match(/Direction: reverse/), "The tooltip shows the direction value as reverse");
+    ok(title.match(/Easing: linear/), "The tooltip shows the easing with direction property set as alternate");
+    ok(title.match(/Fill: none/), "The tooltip shows the fill with direction property set as alternate");
+  
+  });
+
 });
 
 function* setStyle(animation, panel, name, value) {
