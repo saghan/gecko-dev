@@ -105,9 +105,8 @@ function test() {
 
   function testPrivateBrowsingNonBookmarkedURI(aWindow, aCallback) {
     let pageURI = NetUtil.newURI("http://example.com/privateBrowsing");
-    addVisits({ uri: pageURI, transitionType: TRANSITION_TYPED }, aWindow,
-      function() {
-        aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI,
+    yield PlacesTestUtils.addVisits({ uri: pageURI });
+    aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI,
           favIcon16URI, true,
           aWindow.PlacesUtils.favicons.FAVICON_LOAD_PRIVATE, null,
           Services.scriptSecurityManager.getSystemPrincipal());
@@ -115,14 +114,21 @@ function test() {
         if (aCallback) {
           aCallback();
         }
-    });
+  
   }
 
   function testDisabledHistory(aWindow, aCallback) {
     let pageURI = NetUtil.newURI("http://example.com/disabledHistory");
-    addVisits({ uri: pageURI, transition: TRANSITION_TYPED }, aWindow,
-      function() {
-        aWindow.Services.prefs.setBoolPref("places.history.enabled", false);
+  
+         // The setAndFetchFaviconForPage function calls CanAddURI synchronously, thus
+         // we can set the preference back to true immediately . We don't clear the
+         // preference because not all products enable Places by default.
+    
+
+
+        yield PlacesTestUtils.addVisits({ uri: pageURI });
+
+     aWindow.Services.prefs.setBoolPref("places.history.enabled", false);
 
         aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI,
           favIcon16URI, true,
@@ -137,14 +143,16 @@ function test() {
         if (aCallback) {
           aCallback();
         }
-    });
+
+
   }
 
   function testErrorIcon(aWindow, aCallback) {
     let pageURI = NetUtil.newURI("http://example.com/errorIcon");
-    addVisits({ uri: pageURI, transition: TRANSITION_TYPED }, aWindow,
-      function() {
-        aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI,
+
+   
+            yield PlacesTestUtils.addVisits({ uri: pageURI });
+             aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI,
           favIconErrorPageURI, true,
           aWindow.PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE, null,
           Services.scriptSecurityManager.getSystemPrincipal());
@@ -152,7 +160,7 @@ function test() {
       if (aCallback) {
         aCallback();
       }
-    });
+
   }
 
   function testNonExistingPage(aWindow, aCallback) {
@@ -214,13 +222,14 @@ function test() {
     // This is the only test that should cause the waitForFaviconChanged
     // callback to be invoked.  In turn, the callback will invoke
     // finish() causing the tests to finish.
-    addVisits({ uri: lastPageURI, transition: TRANSITION_TYPED }, aWindow,
-      function() {
-        aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(lastPageURI,
+    
+
+                yield PlacesTestUtils.addVisits({ uri: pageURI });
+                aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(lastPageURI,
           favIcon32URI, true,
           aWindow.PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE, null,
           Services.scriptSecurityManager.getSystemPrincipal());
-    });
+
   }
 
   checkFavIconsDBCount(function() {

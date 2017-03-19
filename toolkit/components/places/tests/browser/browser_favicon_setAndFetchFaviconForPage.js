@@ -64,13 +64,12 @@ function test() {
       }
     );
 
-    addVisits({uri: pageURI, transition: TRANSITION_TYPED}, aWindow,
-      function() {
-        aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI, favIconURI,
+
+    yield PlacesTestUtils.addVisits({ uri: pageURI });
+    aWindow.PlacesUtils.favicons.setAndFetchFaviconForPage(pageURI, favIconURI,
           true, aWindow.PlacesUtils.favicons.FAVICON_LOAD_NON_PRIVATE, null,
           Services.scriptSecurityManager.getSystemPrincipal());
-      }
-    );
+
   }
 
   function testAboutURIBookmarked(aWindow, aCallback) {
