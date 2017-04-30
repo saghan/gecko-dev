@@ -284,11 +284,17 @@ HeapSnapshot::saveNode(const protobuf::Node& node, NodeIdSet& edgeReferents)
       return false;
   }
 
-  if (NS_WARN_IF(!nodes.putNew(id, DeserializedNode(id, coarseType, typeName,
-                                                    size, Move(edges),
-                                                    allocationStack,
-                                                    jsObjectClassName,
-                                                    scriptFilename, *this))))
+  //Performed Extract Variable Refactoring as multiple expressions in the if condition
+  DeserializedNode deseializedNode = new DeserializedNode(id, coarseType, typeName, size, Move(edges),
+														  allocationStack, jsObjectClassName,
+														  scriptFilename, *this);
+
+//  if (NS_WARN_IF(!nodes.putNew(id, DeserializedNode(id, coarseType, typeName,
+//                                                    size, Move(edges),
+//                                                    allocationStack,
+//                                                    jsObjectClassName,
+//                                                    scriptFilename, *this))))
+  if (NS_WARN_IF(!nodes.putNew(id, deserializedNode)))
   {
     return false;
   };
