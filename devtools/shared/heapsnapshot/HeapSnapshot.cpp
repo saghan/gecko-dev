@@ -302,6 +302,23 @@ HeapSnapshot::saveNode(const protobuf::Node& node, NodeIdSet& edgeReferents)
   return true;
 }
 
+bool evaluateFrameData(auto data) {
+
+  if (!data.has_line())
+    return false;
+
+  if (!data.has_column())
+    return false;
+
+  if (!data.has_issystem())
+    return false;
+
+  if (!data.has_isselfhosted())
+    return false;
+
+  return true;
+}
+
 bool
 HeapSnapshot::saveStackFrame(const protobuf::StackFrame& frame,
                              StackFrameId& outFrameId)
@@ -334,21 +351,19 @@ HeapSnapshot::saveStackFrame(const protobuf::StackFrame& frame,
   if (frames.has(id))
     return false;
 
-  if (!data.has_line())
-    return false;
-  uint32_t line = data.line();
+  bool evaluateFrameDataResult = evaluateFrameData(data);
+  uint32_t line, column;
+  bool isSystem,isSelfHosted;
 
-  if (!data.has_column())
+  if(evaluateFrameDataResult == false) {
     return false;
-  uint32_t column = data.column();
-
-  if (!data.has_issystem())
-    return false;
-  bool isSystem = data.issystem();
-
-  if (!data.has_isselfhosted())
-    return false;
-  bool isSelfHosted = data.isselfhosted();
+  }
+  else {
+    line = data.line();
+    column = data.column();
+    isSystem = data.issystem();
+    isSelfHosted = data.isselfhosted();
+  }
 
   Maybe<StringOrRef> sourceOrRef = GET_STRING_OR_REF(data, source);
   auto source = getOrInternString<char16_t>(internedTwoByteStrings, sourceOrRef);
@@ -373,11 +388,9 @@ HeapSnapshot::saveStackFrame(const protobuf::StackFrame& frame,
     parent = Some(parentId);
   }
 
-  //performed extract variable
-  DeserializedStackFrame deserializedStackFrame = new DeserializedStackFrame(id, parent, line, column,
-		  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  source, functionDisplayName,
-																			  isSystem, isSelfHosted, *this);
-  if (!frames.putNew(id, deserializedStackFrame))
+  if (!frames.putNew(id, DeserializedStackFrame(id, parent, line, column,
+                                                source, functionDisplayName,
+                                                isSystem, isSelfHosted, *this)))
   {
     return false;
   }
