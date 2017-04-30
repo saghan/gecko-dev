@@ -306,7 +306,6 @@ function UpdateBackForwardCommands(aWebNavigation) {
   }
 }
 
-
 const gClickAndHoldListenersOnElement = {
   _timers: new Map(),
 
@@ -965,6 +964,13 @@ function serializeInputStream(aStream) {
   return data;
 }
 
+// Starts a new load in the browser first switching the browser to the correct
+// process
+function LoadInOtherProcess(browser, loadOptions, historyIndex = -1) {
+  let tab = gBrowser.getTabForBrowser(browser);
+  SessionStore.navigateAndRestore(tab, loadOptions, historyIndex);
+}
+
 // A shared function used by both remote and non-remote browser XBL bindings to
 // load a URI or redirect it to the correct process.
 function _loadURIWithFlags(browser, uri, params) {
@@ -1054,13 +1060,6 @@ function _loadURIWithFlags(browser, uri, params) {
       browser.inLoadURI = false;
     }
   }
-}
-
-// Starts a new load in the browser first switching the browser to the correct
-// process
-function LoadInOtherProcess(browser, loadOptions, historyIndex = -1) {
-  let tab = gBrowser.getTabForBrowser(browser);
-  SessionStore.navigateAndRestore(tab, loadOptions, historyIndex);
 }
 
 // Called when a docshell has attempted to load a page in an incorrect process.
@@ -1842,62 +1841,6 @@ if (AppConstants.platform == "macosx") {
   var nonBrowserWindowShutdown       = gBrowserInit.nonBrowserWindowShutdown.bind(gBrowserInit);
 }
 
-function HandleAppCommandEvent(evt) {
-  switch (evt.command) {
-  case "Back":
-    BrowserBack();
-    break;
-  case "Forward":
-    BrowserForward();
-    break;
-  case "Reload":
-    BrowserReloadSkipCache();
-    break;
-  case "Stop":
-    if (XULBrowserWindow.stopCommand.getAttribute("disabled") != "true")
-      BrowserStop();
-    break;
-  case "Search":
-    BrowserSearch.webSearch();
-    break;
-  case "Bookmarks":
-    SidebarUI.toggle("viewBookmarksSidebar");
-    break;
-  case "Home":
-    BrowserHome();
-    break;
-  case "New":
-    BrowserOpenTab();
-    break;
-  case "Close":
-    BrowserCloseTabOrWindow();
-    break;
-  case "Find":
-    gFindBar.onFindCommand();
-    break;
-  case "Help":
-    openHelpLink("firefox-help");
-    break;
-  case "Open":
-    BrowserOpenFileWindow();
-    break;
-  case "Print":
-    PrintUtils.printWindow(gBrowser.selectedBrowser.outerWindowID,
-                           gBrowser.selectedBrowser);
-    break;
-  case "Save":
-    saveBrowser(gBrowser.selectedBrowser);
-    break;
-  case "SendMail":
-    MailIntegration.sendLinkForBrowser(gBrowser.selectedBrowser);
-    break;
-  default:
-    return;
-  }
-  evt.stopPropagation();
-  evt.preventDefault();
-}
-
 function maybeRecordAbandonmentTelemetry(tab, type) {
   if (!tab.hasAttribute("busy")) {
     return;
@@ -1990,6 +1933,13 @@ function BrowserStop() {
   gBrowser.webNavigation.stop(stopFlags);
 }
 
+
+function BrowserReloadSkipCache() {
+  // Bypass proxy and cache.
+  const reloadFlags = nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY | nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
+  BrowserReloadWithFlags(reloadFlags);
+}
+
 function BrowserReloadOrDuplicate(aEvent) {
   let metaKeyPressed = AppConstants.platform == "macosx"
                        ? aEvent.metaKey
@@ -2014,12 +1964,6 @@ function BrowserReload() {
     return BrowserReloadSkipCache();
   }
   const reloadFlags = nsIWebNavigation.LOAD_FLAGS_NONE;
-  BrowserReloadWithFlags(reloadFlags);
-}
-
-function BrowserReloadSkipCache() {
-  // Bypass proxy and cache.
-  const reloadFlags = nsIWebNavigation.LOAD_FLAGS_BYPASS_PROXY | nsIWebNavigation.LOAD_FLAGS_BYPASS_CACHE;
   BrowserReloadWithFlags(reloadFlags);
 }
 
@@ -2251,6 +2195,62 @@ function loadURI(uri, referrer, postData, allowThirdPartyFixup, referrerPolicy,
                  forceAboutBlankViewerInCurrent,
                });
   } catch (e) {}
+}
+
+function HandleAppCommandEvent(evt) {
+  switch (evt.command) {
+  case "Back":
+    BrowserBack();
+    break;
+  case "Forward":
+    BrowserForward();
+    break;
+  case "Reload":
+    BrowserReloadSkipCache();
+    break;
+  case "Stop":
+    if (XULBrowserWindow.stopCommand.getAttribute("disabled") != "true")
+      BrowserStop();
+    break;
+  case "Search":
+    BrowserSearch.webSearch();
+    break;
+  case "Bookmarks":
+    SidebarUI.toggle("viewBookmarksSidebar");
+    break;
+  case "Home":
+    BrowserHome();
+    break;
+  case "New":
+    BrowserOpenTab();
+    break;
+  case "Close":
+    BrowserCloseTabOrWindow();
+    break;
+  case "Find":
+    gFindBar.onFindCommand();
+    break;
+  case "Help":
+    openHelpLink("firefox-help");
+    break;
+  case "Open":
+    BrowserOpenFileWindow();
+    break;
+  case "Print":
+    PrintUtils.printWindow(gBrowser.selectedBrowser.outerWindowID,
+                           gBrowser.selectedBrowser);
+    break;
+  case "Save":
+    saveBrowser(gBrowser.selectedBrowser);
+    break;
+  case "SendMail":
+    MailIntegration.sendLinkForBrowser(gBrowser.selectedBrowser);
+    break;
+  default:
+    return;
+  }
+  evt.stopPropagation();
+  evt.preventDefault();
 }
 
 /**
