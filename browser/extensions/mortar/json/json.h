@@ -14,6 +14,13 @@ enum {
   ERROR_PART = -2 /* The string is not a full JSON packet, more bytes expected */
 };
 
+struct ParseParameters{
+	const string& js;
+	string::const_iterator& pos;
+	stack<int>& parents;
+
+};
+
 class Token {
   friend class Parser;
 
