@@ -306,29 +306,6 @@ function UpdateBackForwardCommands(aWebNavigation) {
   }
 }
 
-/**
- * Click-and-Hold implementation for the Back and Forward buttons
- * XXXmano: should this live in toolbarbutton.xml?
- */
-function SetClickAndHoldHandlers() {
-  // Bug 414797: Clone the back/forward buttons' context menu into both buttons.
-  let popup = document.getElementById("backForwardMenu").cloneNode(true);
-  popup.removeAttribute("id");
-  // Prevent the back/forward buttons' context attributes from being inherited.
-  popup.setAttribute("context", "");
-
-  let backButton = document.getElementById("back-button");
-  backButton.setAttribute("type", "menu");
-  backButton.appendChild(popup);
-  gClickAndHoldListenersOnElement.add(backButton);
-
-  let forwardButton = document.getElementById("forward-button");
-  popup = popup.cloneNode(true);
-  forwardButton.setAttribute("type", "menu");
-  forwardButton.appendChild(popup);
-  gClickAndHoldListenersOnElement.add(forwardButton);
-}
-
 
 const gClickAndHoldListenersOnElement = {
   _timers: new Map(),
@@ -420,6 +397,29 @@ const gClickAndHoldListenersOnElement = {
     aElm.addEventListener("click", this, true);
   }
 };
+
+/**
+ * Click-and-Hold implementation for the Back and Forward buttons
+ * XXXmano: should this live in toolbarbutton.xml?
+ */
+function SetClickAndHoldHandlers() {
+  // Bug 414797: Clone the back/forward buttons' context menu into both buttons.
+  let popup = document.getElementById("backForwardMenu").cloneNode(true);
+  popup.removeAttribute("id");
+  // Prevent the back/forward buttons' context attributes from being inherited.
+  popup.setAttribute("context", "");
+
+  let backButton = document.getElementById("back-button");
+  backButton.setAttribute("type", "menu");
+  backButton.appendChild(popup);
+  gClickAndHoldListenersOnElement.add(backButton);
+
+  let forwardButton = document.getElementById("forward-button");
+  popup = popup.cloneNode(true);
+  forwardButton.setAttribute("type", "menu");
+  forwardButton.appendChild(popup);
+  gClickAndHoldListenersOnElement.add(forwardButton);
+}
 
 const gSessionHistoryObserver = {
   observe(subject, topic, data) {
