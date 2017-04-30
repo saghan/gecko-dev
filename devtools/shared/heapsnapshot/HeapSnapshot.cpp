@@ -373,9 +373,11 @@ HeapSnapshot::saveStackFrame(const protobuf::StackFrame& frame,
     parent = Some(parentId);
   }
 
-  if (!frames.putNew(id, DeserializedStackFrame(id, parent, line, column,
-                                                source, functionDisplayName,
-                                                isSystem, isSelfHosted, *this)))
+  //performed extract variable
+  DeserializedStackFrame deserializedStackFrame = new DeserializedStackFrame(id, parent, line, column,
+		  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  source, functionDisplayName,
+																			  isSystem, isSelfHosted, *this);
+  if (!frames.putNew(id, deserializedStackFrame))
   {
     return false;
   }
